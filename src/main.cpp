@@ -4,14 +4,17 @@
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <ESPDash.h>
-#include <DHT.h>
+#include <DHTesp.h>
 
-DHT dht;
 AsyncWebServer server(80);
 
 const char* ssid = "ap_301"; // Your WiFi SSID
 const char* password = "123321123"; // Your WiFi Password
 int indicator = 2;
+#define DHTpin 2
+#define DHTTYPE    DHT11
+
+DHTesp dht;
 
 
 void buttonClicked(const char* id){
@@ -22,6 +25,7 @@ void buttonClicked(const char* id){
 }
 
 void setup() {
+
     Serial.begin(115200);
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
@@ -29,8 +33,8 @@ void setup() {
         Serial.printf("WiFi Failed!\n");
         return;
     }
-    
-    dht.setup(14);
+    dht.setup(DHTpin, DHTesp::DHT11);
+
     Serial.print("IP Address: ");
     Serial.println(WiFi.localIP());
     
@@ -45,8 +49,22 @@ void setup() {
 }
 
 void loop() {
+  delay(dht.getMinimumSamplingPeriod());
 
-    delay(5000);
+float humidity = dht.getHumidity();
+  float temperature = dht.getTemperature();
+
+  Serial.print(dht.getStatusString());
+  Serial.print("\t");
+  Serial.print(humidity, 1);
+  Serial.print("\t\t");
+  Serial.print(temperature, 1);
+  Serial.print("\t\t");
+  Serial.print(temperature);
+  Serial.print("\t\t");
+  Serial.print(humidity);
+  Serial.print("\t\t");
+  
     float sensorValue = analogRead(A0);
     float voltage = sensorValue * (5.0 / 1023.0);
     ESPDash.updateNumberCard("num1", voltage );
